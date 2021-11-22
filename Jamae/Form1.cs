@@ -195,40 +195,7 @@ namespace Jamae
                 if (currntVolume != prevVolume)
                 {
                     prevVolume = currntVolume;
-#if false
-                    Console.ResetColor();
 
-                    if (currentPriceStringTrx_ask_bid.Equals("BID"))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                    }
-
-                    Console.Write(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)) + ", " + String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)) + ",       ");
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write(String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)) + ", " + String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)) + ", ");
-
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.Write(String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)) + ", " + String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)));
-                    Console.ResetColor();
-
-                    Console.Write("     :     ");
-
-                    if (currentPriceStringBtc_ask_bid.Equals("BID"))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                    }
-
-                    Console.WriteLine(String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)) + ", " + currentPriceStringBtc_volume);
-#endif
                     table.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
                     //tbLog.Text = tbMsg;
                     if (this.InvokeRequired)
@@ -299,6 +266,7 @@ namespace Jamae
             Console.ReadLine();
         }
 
+        #region 차트
         private void inittDrawChar()
         {
             Up U = new Up("W5zjjBBit8GjGd2mY5rOKFuVY12HV17q513qlmdr", "igQC32jg0NBMMUWadSs39iIAWft7sBGiaL801Unx");
@@ -599,20 +567,24 @@ namespace Jamae
             }
 
             // BTC 급락 분석
-            if(priceInfoList[0].시가 > priceInfoList[0].종가)
+            if (priceInfoList[0].시가 > priceInfoList[0].종가)
             {
-                if (1000000 < (priceInfoList[0].시가 - priceInfoList[0].종가))
+                if (500000 < (priceInfoList[0].시가 - priceInfoList[0].종가))
                 {
                     if (this.InvokeRequired)
                     {
                         this.Invoke(new Action(() =>
                         {
-                            this.tbWarning.Text = "S";
+                            rtbWarning.Clear();
+                            this.rtbWarning.SelectionColor = Color.Blue;
+                            this.rtbWarning.AppendText("S" + "\r\n");
+                            this.rtbWarning.SelectionColor = Color.Blue;
+                            this.rtbWarning.AppendText("- " + String.Format("{0:#,0}", priceInfoList[0].시가 - priceInfoList[0].종가));
                         }));
                     }
                     else
                     {
-                        this.tbWarning.Text = "S";
+                        this.rtbWarning.Text = "S";
                     }
                 }
                 else
@@ -621,12 +593,15 @@ namespace Jamae
                     {
                         this.Invoke(new Action(() =>
                         {
-                            this.tbWarning.Text = "-";
+                            rtbWarning.Clear();
+                            this.rtbWarning.SelectionColor = Color.Black;
+                            this.rtbWarning.AppendText("-" + "\r\n");
+                            this.rtbWarning.AppendText("- " + String.Format("{0:#,0}", priceInfoList[0].시가 - priceInfoList[0].종가));
                         }));
                     }
                     else
                     {
-                        this.tbWarning.Text = "-";
+                        this.rtbWarning.Text = "-";
                     }
                 }
 
@@ -637,17 +612,22 @@ namespace Jamae
                 {
                     this.Invoke(new Action(() =>
                     {
-                        this.tbWarning.Text = "B";
+                        rtbWarning.Clear();
+                        this.rtbWarning.SelectionColor = Color.Red;
+                        this.rtbWarning.AppendText("B" + "\r\n");
+                        this.rtbWarning.SelectionColor = Color.Red;
+                        this.rtbWarning.AppendText("+ " + String.Format("{0:#,0}", priceInfoList[0].종가 - priceInfoList[0].시가));
                     }));
                 }
                 else
                 {
-                    this.tbWarning.Text = "B";
+                    this.rtbWarning.Text = "B";
                 }
             }
 
 
         }
+        #endregion
 
         public int convertStringToInto(string str)
         {
