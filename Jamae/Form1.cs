@@ -15,29 +15,26 @@ namespace Jamae
 {
     public partial class Form1 : Form
     {
-        Series chartSeries;
-        Series chartSeries2;
+        private const int SELL_PRICE = 40000;
+
         static int prevVolume = 0;
         private BackgroundWorker bw = new BackgroundWorker(); //BackgroundWorker클래스를 선언 및 할당
         List<PriceInfoEntityObject> priceInfoList;
 
-        static private string prevLastTime;
+        static private double prevLastTime;
 
         public Form1()
         {
             InitializeComponent();
 
-            chartSeries = chart1.Series["Series1"];
-            chartSeries2 = chart2.Series["Series1"];
-            chart1.Series["Series1"]["PriceUpColor"] = "Red";
-            chart1.Series["Series1"]["PriceDownColor"] = "Blue";
+            chart1.Series["sCandle"]["PriceUpColor"] = "Red";
+            chart1.Series["sCandle"]["PriceDownColor"] = "Blue";
             chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:#,0}";
-            //chart2.Series["Series1"]["PriceUpColor"] = "Red";
-            //chart2.Series["Series1"]["PriceDownColor"] = "Blue";
-            //chart1.Series["Series1"].YAxisType = AxisType.Secondary;
-
-            //chart2.ChartAreas["ChartArea1"].AxisY.Maximum = 50;
-            //chart2.ChartAreas["ChartArea1"].AxisY.Minimum = 0;
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "HH:mm";
+            chart1.ChartAreas[1].AxisX.LabelStyle.Format = "HH:mm";
+            chart1.ChartAreas[2].AxisX.LabelStyle.Format = "HH:mm";
+            chart1.ChartAreas[3].AxisX.LabelStyle.Format = "HH:mm";
+            chart1.ChartAreas[4].AxisX.LabelStyle.Format = "HH:mm";
 
             chart1.AxisViewChanged += chart1_AxisViewChanged;
 
@@ -248,10 +245,18 @@ namespace Jamae
                 {
                     inittDrawChar();
                     isInitChartDraw = true;
+
+                    // Initialize values.
+                    Calculations();
                 }
                 else
                 {
                     updateDrawChart();
+                    //inittDrawChar();
+
+                    // Initialize values.
+                    Calculations();
+
                 }
 
                 Thread.Sleep(250);
@@ -262,7 +267,7 @@ namespace Jamae
 
             // 시세 호가 정보(Orderbook) 조회
             //Console.WriteLine(U.GetOrderbook("KRW-BTC,KRW-ETH"));
-#endregion
+            #endregion
             Console.ReadLine();
         }
 
@@ -283,14 +288,14 @@ namespace Jamae
             currentChart1MJArrayBtc = JArray.Parse(json_candle_1m_btc);
 
             // 1분 마다 차트 업데이트 하기 위해서 마지막 시간 저장 hh:mm
-            prevLastTime = currentChart1MJArrayBtc[0]["candle_date_time_kst"].ToString().Substring(11, 5);
-
+            prevLastTime = DateTime.Parse(currentChart1MJArrayBtc[0]["candle_date_time_kst"].ToString()).ToOADate();
+            //Console.WriteLine("Count: " + currentChart1MJArrayTrx.Count());
             for (int nldx = 0; nldx < currentChart1MJArrayTrx.Count(); nldx++)
             {
-
+                //Console.WriteLine(currentChart1MJArrayBtc[nldx]["candle_date_time_kst"]);
                 priceInfoList.Add(new PriceInfoEntityObject()
                 {
-                    일자 = currentChart1MJArrayBtc[currentChart1MJArrayTrx.Count() - 1 - nldx]["candle_date_time_kst"].ToString().Substring(11, 5),
+                    일자 = DateTime.Parse(currentChart1MJArrayBtc[currentChart1MJArrayTrx.Count() - 1 - nldx]["candle_date_time_kst"].ToString()).ToOADate(),
                     시가 = Convert.ToInt32(Double.Parse(currentChart1MJArrayBtc[currentChart1MJArrayTrx.Count() - 1 - nldx]["opening_price"].ToString())),
                     고가 = Convert.ToInt32(Double.Parse(currentChart1MJArrayBtc[currentChart1MJArrayTrx.Count() - 1 - nldx]["high_price"].ToString())),
                     저가 = Convert.ToInt32(Double.Parse(currentChart1MJArrayBtc[currentChart1MJArrayTrx.Count() - 1 - nldx]["low_price"].ToString())),
@@ -303,47 +308,47 @@ namespace Jamae
 
                     this.Invoke(new Action(() =>
                     {
-                        chart1.Series["Series1"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].고가);
-                        chart1.Series["Series1"].Points[nldx].YValues[1] = priceInfoList[nldx].저가;
-                        chart1.Series["Series1"].Points[nldx].YValues[2] = priceInfoList[nldx].시가;
-                        chart1.Series["Series1"].Points[nldx].YValues[3] = priceInfoList[nldx].종가;
-                        chart2.Series["Series1"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].거래량);
+                        chart1.Series["sCandle"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].고가);
+                        chart1.Series["sCandle"].Points[nldx].YValues[1] = priceInfoList[nldx].저가;
+                        chart1.Series["sCandle"].Points[nldx].YValues[2] = priceInfoList[nldx].시가;
+                        chart1.Series["sCandle"].Points[nldx].YValues[3] = priceInfoList[nldx].종가;
+                        chart1.Series["sVolume"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].거래량);
                     }));
 
                     if (priceInfoList[nldx].시가 > priceInfoList[nldx].종가)
                     {
                         this.Invoke(new Action(() =>
                         {
-                            chart1.Series["Series1"].Points[nldx].Color = Color.Blue;
-                            chart2.Series["Series1"].Points[nldx].Color = Color.Blue;
+                            chart1.Series["sCandle"].Points[nldx].Color = Color.Blue;
+                            chart1.Series["sVolume"].Points[nldx].Color = Color.Blue;
                         }));
                     }
                     else
                     {
                         this.Invoke(new Action(() =>
                         {
-                            chart1.Series["Series1"].Points[nldx].Color = Color.Red;
-                            chart2.Series["Series1"].Points[nldx].Color = Color.Red;
+                            chart1.Series["sCandle"].Points[nldx].Color = Color.Red;
+                            chart1.Series["sVolume"].Points[nldx].Color = Color.Red;
                         }));
                     }
                 }
                 else
                 {
-                    chart1.Series["Series1"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].고가);
-                    chart1.Series["Series1"].Points[nldx].YValues[1] = priceInfoList[nldx].저가;
-                    chart1.Series["Series1"].Points[nldx].YValues[2] = priceInfoList[nldx].시가;
-                    chart1.Series["Series1"].Points[nldx].YValues[3] = priceInfoList[nldx].종가;
-                    chart2.Series["Series1"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].거래량);
+                    chart1.Series["sCandle"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].고가);
+                    chart1.Series["sCandle"].Points[nldx].YValues[1] = priceInfoList[nldx].저가;
+                    chart1.Series["sCandle"].Points[nldx].YValues[2] = priceInfoList[nldx].시가;
+                    chart1.Series["sCandle"].Points[nldx].YValues[3] = priceInfoList[nldx].종가;
+                    chart1.Series["sVolume"].Points.AddXY(priceInfoList[nldx].일자, priceInfoList[nldx].거래량);
 
                     if (priceInfoList[nldx].시가 > priceInfoList[nldx].종가)
                     {
-                        chart1.Series["Series1"].Points[nldx].Color = Color.Blue;
-                        chart2.Series["Series1"].Points[nldx].Color = Color.Blue;
+                        chart1.Series["sCandle"].Points[nldx].Color = Color.Blue;
+                        chart1.Series["sVolume"].Points[nldx].Color = Color.Blue;
                     }
                     else
                     {
-                        chart1.Series["Series1"].Points[nldx].Color = Color.Red;
-                        chart2.Series["Series1"].Points[nldx].Color = Color.Red;
+                        chart1.Series["sCandle"].Points[nldx].Color = Color.Red;
+                        chart1.Series["sVolume"].Points[nldx].Color = Color.Red;
                     }
                 }
 
@@ -379,7 +384,7 @@ namespace Jamae
 
         private void updateDrawChart()
         {
-            int lastChartIndex = chart1.Series["Series1"].Points.Count() - 1;
+            int lastChartIndex = chart1.Series["sCandle"].Points.Count() - 1;
             Up U = new Up("W5zjjBBit8GjGd2mY5rOKFuVY12HV17q513qlmdr", "igQC32jg0NBMMUWadSs39iIAWft7sBGiaL801Unx");
 
             priceInfoList = new List<PriceInfoEntityObject>();
@@ -395,7 +400,7 @@ namespace Jamae
 
             priceInfoList.Add(new PriceInfoEntityObject()
             {
-                일자 = currentChart1MJArrayBtc[0]["candle_date_time_kst"].ToString().Substring(11, 5),
+                일자 = DateTime.Parse(currentChart1MJArrayBtc[0]["candle_date_time_kst"].ToString()).ToOADate(),
                 시가 = Convert.ToInt32(Double.Parse(currentChart1MJArrayBtc[0]["opening_price"].ToString())),
                 고가 = Convert.ToInt32(Double.Parse(currentChart1MJArrayBtc[0]["high_price"].ToString())),
                 저가 = Convert.ToInt32(Double.Parse(currentChart1MJArrayBtc[0]["low_price"].ToString())),
@@ -411,61 +416,61 @@ namespace Jamae
                 {
                     this.Invoke(new Action(() =>
                     {
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[0] = priceInfoList[0].고가;
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
-                        chart2.Series["Series1"].Points[lastChartIndex].YValues[0] = priceInfoList[0].거래량;
+                        chart1.Series["sCandle"].Points[lastChartIndex].YValues[0] = priceInfoList[0].고가;
+                        chart1.Series["sCandle"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
+                        chart1.Series["sCandle"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
+                        chart1.Series["sCandle"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
+                        chart1.Series["sVolume"].Points[lastChartIndex].YValues[0] = priceInfoList[0].거래량;
                     }));
 
                     if (priceInfoList[0].시가 > priceInfoList[0].종가)
                     {
                         this.Invoke(new Action(() =>
                         {
-                            chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
-                            chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
+                            chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Blue;
+                            chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Blue;
                         }));
                     }
                     else
                     {
                         this.Invoke(new Action(() =>
                         {
-                            chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
-                            chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
+                            chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Red;
+                            chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Red;
                         }));
                     }
                 }
                 else
                 {
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[0] = priceInfoList[0].고가;
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
-                    chart2.Series["Series1"].Points[lastChartIndex].YValues[0] = priceInfoList[0].거래량;
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[0] = priceInfoList[0].고가;
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
+                    chart1.Series["sVolume"].Points[lastChartIndex].YValues[0] = priceInfoList[0].거래량;
 
                     if (priceInfoList[0].시가 > priceInfoList[0].종가)
                     {
-                        chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
-                        chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
+                        chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Blue;
+                        chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Blue;
                     }
                     else
                     {
-                        chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
-                        chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
+                        chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Red;
+                        chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Red;
                     }
                 }
 
                 int max = 0;
                 int min = 0;
 
-                min = (int)Int32.Parse(chart1.Series["Series1"].Points[0].YValues[1].ToString());
-                max = (int)Int32.Parse(chart1.Series["Series1"].Points[0].YValues[0].ToString());
-                for (int xCount = 0; xCount < (chart1.Series["Series1"].Points.Count()); xCount++)
+                min = (int)Int32.Parse(chart1.Series["sCandle"].Points[0].YValues[1].ToString());
+                max = (int)Int32.Parse(chart1.Series["sCandle"].Points[0].YValues[0].ToString());
+                for (int xCount = 0; xCount < (chart1.Series["sCandle"].Points.Count()); xCount++)
                 {
-                    if (Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[0].ToString()) > max)
-                        max = (int)Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[0].ToString());
-                    if (Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[1].ToString()) < min)
-                        min = (int)Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[1].ToString());
+                    if (Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[0].ToString()) > max)
+                        max = (int)Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[0].ToString());
+                    if (Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[1].ToString()) < min)
+                        min = (int)Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[1].ToString());
                 }
 
                 if (this.InvokeRequired)
@@ -492,65 +497,82 @@ namespace Jamae
                 {
                     this.Invoke(new Action(() =>
                     {
-                        chart1.Series["Series1"].Points.RemoveAt(0);
-                        chart1.Series["Series1"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].고가);
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
-                        chart1.Series["Series1"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
-                        chart2.Series["Series1"].Points.RemoveAt(0);
-                        chart2.Series["Series1"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].거래량);
+                        chart1.Series["sCandle"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].고가);
+                        chart1.Series["sCandle"].Points[lastChartIndex+1].YValues[1] = priceInfoList[0].저가;
+                        chart1.Series["sCandle"].Points[lastChartIndex+1].YValues[2] = priceInfoList[0].시가;
+                        chart1.Series["sCandle"].Points[lastChartIndex+1].YValues[3] = priceInfoList[0].종가;
+                        chart1.Series["sVolume"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].거래량);
+                        chart1.Series["sCandle"].Points.RemoveAt(0);
+                        chart1.Series["sVolume"].Points.RemoveAt(0);
+                        chart1.Series["sRSI"].Points.RemoveAt(0);
+                        chart1.Series["sBB"].Points.RemoveAt(0);
+                        chart1.Series["sMovingAverage"].Points.RemoveAt(0);
+                        chart1.Series["sStochastic"].Points.RemoveAt(0);
+                        chart1.Series["sSMA"].Points.RemoveAt(0);
+                        chart1.Series["sCCI"].Points.RemoveAt(0);
+                        chart1.ResetAutoValues();
                     }));
 
                     if (priceInfoList[0].시가 > priceInfoList[0].종가)
                     {
                         this.Invoke(new Action(() =>
                         {
-                            chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
-                            chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
+                            chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Blue;
+                            chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Blue;
                         }));
                     }
                     else
                     {
                         this.Invoke(new Action(() =>
                         {
-                            chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
-                            chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
+                            chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Red;
+                            chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Red;
                         }));
                     }
                 }
                 else
                 {
-                    chart1.Series["Series1"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].고가);
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
-                    chart1.Series["Series1"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
-                    chart2.Series["Series1"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].거래량);
+
+                    chart1.Series["sCandle"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].고가);
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[1] = priceInfoList[0].저가;
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[2] = priceInfoList[0].시가;
+                    chart1.Series["sCandle"].Points[lastChartIndex].YValues[3] = priceInfoList[0].종가;
+                    chart1.Series["sVolume"].Points.AddXY(priceInfoList[0].일자, priceInfoList[0].거래량);
+                    chart1.Series["sCandle"].Points.RemoveAt(0);
+                    chart1.Series["sVolume"].Points.RemoveAt(0);
+                    chart1.Series["sRSI"].Points.RemoveAt(0);
+                    chart1.Series["sBB"].Points.RemoveAt(0);
+                    chart1.Series["sMovingAverage"].Points.RemoveAt(0);
+                    chart1.Series["sStochastic"].Points.RemoveAt(0);
+                    chart1.Series["sSMA"].Points.RemoveAt(0);
+                    chart1.Series["sCCI"].Points.RemoveAt(0);
+                    chart1.ResetAutoValues();
 
                     if (priceInfoList[0].시가 > priceInfoList[0].종가)
                     {
-                        chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
-                        chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Blue;
+                        chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Blue;
+                        chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Blue;
                     }
                     else
                     {
-                        chart1.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
-                        chart2.Series["Series1"].Points[lastChartIndex].Color = Color.Red;
+                        chart1.Series["sCandle"].Points[lastChartIndex].Color = Color.Red;
+                        chart1.Series["sVolume"].Points[lastChartIndex].Color = Color.Red;
                     }
                 }
-
+                //Console.WriteLine("2");
                 int max = 0;
                 int min = 0;
 
-                min = (int)Int32.Parse(chart1.Series["Series1"].Points[0].YValues[1].ToString());
-                max = (int)Int32.Parse(chart1.Series["Series1"].Points[0].YValues[0].ToString());
-                for (int xCount = 0; xCount < (chart1.Series["Series1"].Points.Count()) - 1; xCount++)
+                min = (int)Int32.Parse(chart1.Series["sCandle"].Points[0].YValues[1].ToString());
+                max = (int)Int32.Parse(chart1.Series["sCandle"].Points[0].YValues[0].ToString());
+                for (int xCount = 0; xCount < (chart1.Series["sCandle"].Points.Count()) - 1; xCount++)
                 {
-                    if (Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[0].ToString()) > max)
-                        max = (int)Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[0].ToString());
-                    if (Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[1].ToString()) < min)
-                        min = (int)Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[1].ToString());
+                    if (Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[0].ToString()) > max)
+                        max = (int)Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[0].ToString());
+                    if (Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[1].ToString()) < min)
+                        min = (int)Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[1].ToString());
                 }
-
+                //Console.WriteLine("3," + min + ", " + max);
                 if (this.InvokeRequired)
                 {
                     this.Invoke(new Action(() =>
@@ -564,12 +586,13 @@ namespace Jamae
                     this.chart1.ChartAreas[0].AxisY.Maximum = max * 1.001;
                     this.chart1.ChartAreas[0].AxisY.Minimum = min * 0.999;
                 }
+                //Console.WriteLine("4");
             }
 
             // BTC 급락 분석
             if (priceInfoList[0].시가 > priceInfoList[0].종가)
             {
-                if (500000 < (priceInfoList[0].시가 - priceInfoList[0].종가))
+                if (SELL_PRICE < (priceInfoList[0].시가 - priceInfoList[0].종가))
                 {
                     if (this.InvokeRequired)
                     {
@@ -624,10 +647,9 @@ namespace Jamae
                     this.rtbWarning.Text = "B";
                 }
             }
-
-
         }
-        #endregion
+
+#endregion
 
         public int convertStringToInto(string str)
         {
@@ -647,32 +669,119 @@ namespace Jamae
 
                 for (int xCount = startPosition - 1; xCount < endPosition; xCount++)
                 {
-                    if (xCount >= chart1.Series["Series1"].Points.Count())
+                    if (xCount >= chart1.Series["sCandle"].Points.Count())
                         break;
                     if (xCount < 0)
                         xCount = 0;
 
-                    if (Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[0].ToString()) > max)
-                        max = (int)Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[0].ToString());
-                    if (Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[1].ToString()) < min)
-                        min = (int)Int32.Parse(chart1.Series["Series1"].Points[xCount].YValues[1].ToString());
+                    if (Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[0].ToString()) > max)
+                        max = (int)Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[0].ToString());
+                    if (Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[1].ToString()) < min)
+                        min = (int)Int32.Parse(chart1.Series["sCandle"].Points[xCount].YValues[1].ToString());
 
-                    Console.WriteLine(" xCount [{0}] : {1}", xCount, chart1.Series["Series1"].Points[xCount].YValues[1].ToString());
+                    Console.WriteLine(" xCount [{0}] : {1}", xCount, chart1.Series["sCandle"].Points[xCount].YValues[1].ToString());
                 }
 
                 this.chart1.ChartAreas[0].AxisY.Maximum = max;
                 this.chart1.ChartAreas[0].AxisY.Minimum = min;
             }
         }
+
+        /// <summary>
+        /// This method calculates a different indicator if corresponding
+        /// item in the combo box is selected.
+        /// </summary>
+        private void Calculations()
+        {
+            //Console.WriteLine("Calculations");
+
+            // Relative Strength Index
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    this.chart1.DataManipulator.FinancialFormula(FinancialFormula.RelativeStrengthIndex, "10", "sCandle:Y4", "sRSI");
+                    chart1.ChartAreas["caRSI"].AxisY.Minimum = 0;
+                    chart1.ChartAreas["caRSI"].AxisY.Maximum = 100;
+
+                    StripLine stripLine = new StripLine();
+                    chart1.ChartAreas["caRSI"].AxisY.StripLines.Add(stripLine);
+                    stripLine.Interval = 70;
+                    stripLine.StripWidth = 30;
+                    stripLine.BackColor = Color.FromArgb(64, 200, 191, 228);
+
+                    chart1.ChartAreas["caRSI"].AxisX.Minimum = chart1.Series["sCandle"].Points[0].XValue;
+                }));
+            }
+
+            // Bollinger Bands
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    // Bollinger Bands - moving average
+                    chart1.DataManipulator.FinancialFormula(FinancialFormula.MovingAverage, "10", "sCandle:Y", "sMovingAverage");
+                    // Bollinger Bands - upper, lower
+                    chart1.DataManipulator.FinancialFormula(FinancialFormula.BollingerBands, "10,2", "sCandle:Y", "sBB,sBB:Y2");
+                }));
+            }
+
+            // Stochastic
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    chart1.DataManipulator.FinancialFormula(FinancialFormula.StochasticIndicator, "5,5", "sCandle:Y,sCandle:Y2,sCandle:Y4", "sStochastic,sSMA");
+
+                    StripLine stripLine = new StripLine();
+                    chart1.ChartAreas["caStochastic"].AxisY.StripLines.Add(stripLine);
+                    stripLine.Interval = 70;
+                    stripLine.StripWidth = 30;
+                    // stripLine.BackColor = Color.FromArgb(64, 165, 191, 228);
+                    stripLine.BackColor = Color.FromArgb(64, 200, 191, 228);
+
+                    chart1.ChartAreas["caStochastic"].AxisX.Minimum = chart1.Series["sCandle"].Points[0].XValue;
+                }));
+            }
+
+            // Commodity Channel Index
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    chart1.DataManipulator.FinancialFormula(FinancialFormula.CommodityChannelIndex, "10","sCandle:Y,sCandle:Y2,sCandle:Y4", "sCCI");
+
+                    //StripLine stripLine = new StripLine();
+                    //chart1.ChartAreas["caCCI"].AxisY.StripLines.Add(stripLine);
+                    //stripLine.Interval = 100;
+                    //stripLine.StripWidth = 30;
+                    //stripLine.BackColor = Color.FromArgb(64, 200, 191, 228);
+
+                    chart1.ChartAreas["caCCI"].AxisX.Minimum = chart1.Series["sCandle"].Points[0].XValue;
+                }));
+            }
+
+            // Draw chart1
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    chart1.Invalidate();
+
+                }));
+            }
+        }
     }
 
     class PriceInfoEntityObject
     {
-        public String 일자 { get; set; }
+        public double 일자 { get; set; }
         public int 시가 { get; set; }
         public int 고가 { get; set; }
         public int 저가 { get; set; }
         public int 종가 { get; set; }
         public int 거래량 { get; set; }
     }
+
+
 }
