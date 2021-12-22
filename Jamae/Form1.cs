@@ -23,6 +23,15 @@ namespace Jamae
 
         static private double prevLastTime;
 
+        static int tmp_count = 0;
+
+        static bool isBuy = false;
+
+        static double buy_price = 0;
+
+        static string trx_price = "";
+        static string buy_price_to_alt = "";
+
         public Form1()
         {
             InitializeComponent();
@@ -35,6 +44,7 @@ namespace Jamae
             chart1.ChartAreas[2].AxisX.LabelStyle.Format = "HH:mm";
             chart1.ChartAreas[3].AxisX.LabelStyle.Format = "HH:mm";
             chart1.ChartAreas[4].AxisX.LabelStyle.Format = "HH:mm";
+            chart1.ChartAreas[5].AxisX.LabelStyle.Format = "HH:mm";
 
             chart1.AxisViewChanged += chart1_AxisViewChanged;
 
@@ -189,23 +199,27 @@ namespace Jamae
 
                 currntVolume = convertStringToInto(currentPriceStringTrx_volume);
 
+                trx_price = currentOrderBookStringTrx_bid_price;
+
                 if (currntVolume != prevVolume)
                 {
                     prevVolume = currntVolume;
 
-                    table.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
+                    //table.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
+                    table.Rows.Add(currentPriceStringTrx_price, currentPriceStringTrx_volume, currentOrderBookStringTrx_ask_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), convertStringToInto(currentOrderBookStringTrx_bid_price), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
                     //tbLog.Text = tbMsg;
                     if (this.InvokeRequired)
                     {
                         this.BeginInvoke(new Action(() => rtbBPrice.Clear()));
-                        this.BeginInvoke(new Action(() => dgbTradeInfo.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume)));
+                        //this.BeginInvoke(new Action(() => dgbTradeInfo.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume)));
+                        this.BeginInvoke(new Action(() => dgbTradeInfo.Rows.Add(currentPriceStringTrx_price, currentPriceStringTrx_volume,  currentOrderBookStringTrx_ask_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), currentOrderBookStringTrx_bid_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume)));
                         if (currentPriceStringTrx_ask_bid.Equals("BID"))
                         {
                             this.BeginInvoke(new Action(() => dgbTradeInfo.Rows[dgbTradeInfo.Rows.Count - 2].Cells[0].Style.BackColor = Color.LightPink));
                         }
                         else
                         {
-                            this.BeginInvoke(new Action(() => dgbTradeInfo.Rows[dgbTradeInfo.Rows.Count - 2].Cells[0].Style.BackColor = Color.LightBlue));
+                            BeginInvoke(new Action(() => dgbTradeInfo.Rows[dgbTradeInfo.Rows.Count - 2].Cells[0].Style.BackColor = Color.LightBlue));
                         }
 
                         if (currentPriceStringBtc_ask_bid.Equals("BID"))
@@ -510,6 +524,7 @@ namespace Jamae
                         chart1.Series["sStochastic"].Points.RemoveAt(0);
                         chart1.Series["sSMA"].Points.RemoveAt(0);
                         chart1.Series["sCCI"].Points.RemoveAt(0);
+                        chart1.Series["sMFI"].Points.RemoveAt(0);
                         chart1.ResetAutoValues();
                     }));
 
@@ -546,6 +561,7 @@ namespace Jamae
                     chart1.Series["sStochastic"].Points.RemoveAt(0);
                     chart1.Series["sSMA"].Points.RemoveAt(0);
                     chart1.Series["sCCI"].Points.RemoveAt(0);
+                    chart1.Series["sMFI"].Points.RemoveAt(0);
                     chart1.ResetAutoValues();
 
                     if (priceInfoList[0].시가 > priceInfoList[0].종가)
@@ -761,6 +777,23 @@ namespace Jamae
                 }));
             }
 
+            // Money Flow Indicator
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    chart1.DataManipulator.FinancialFormula(FinancialFormula.MoneyFlow, "10", "sCandle:Y,sCandle:Y2,sCandle:Y4, sVolume:Y", "sMFI");
+
+                    //StripLine stripLine = new StripLine();
+                    //chart1.ChartAreas["caCCI"].AxisY.StripLines.Add(stripLine);
+                    //stripLine.Interval = 100;
+                    //stripLine.StripWidth = 30;
+                    //stripLine.BackColor = Color.FromArgb(64, 200, 191, 228);
+
+                    chart1.ChartAreas["caMFI"].AxisX.Minimum = chart1.Series["sCandle"].Points[0].XValue;
+                }));
+            }
+
             // Draw chart1
             if (this.InvokeRequired)
             {
@@ -770,6 +803,83 @@ namespace Jamae
 
                 }));
             }
+
+            //
+            int lastChartIndex = chart1.Series["sCandle"].Points.Count() - 1;
+            double close_price = chart1.Series["sCandle"].Points[lastChartIndex].YValues[3];
+            double rsi_value = chart1.Series["sRSI"].Points[lastChartIndex - 10].YValues[0];
+            double bb_upper_price = chart1.Series["sBB"].Points[lastChartIndex - 9].YValues[0];
+            double bb_moving_average_price_prev = chart1.Series["sMovingAverage"].Points[lastChartIndex - 10].YValues[0];
+            double bb_moving_average_price = chart1.Series["sMovingAverage"].Points[lastChartIndex - 9].YValues[0];
+            double bb_lower_price = chart1.Series["sBB"].Points[lastChartIndex - 9].YValues[1];
+            double cci_value = chart1.Series["sCCI"].Points[lastChartIndex - 9].YValues[0];
+            double stochastic_k_prev = chart1.Series["sStochastic"].Points[lastChartIndex - 9].YValues[0];
+            double stochastic_d_prev = chart1.Series["sSMA"].Points[lastChartIndex - 9].YValues[0];
+            double stochastic_k = chart1.Series["sStochastic"].Points[lastChartIndex - 8].YValues[0];
+            double stochastic_d = chart1.Series["sSMA"].Points[lastChartIndex - 8].YValues[0];
+            double mfi_value = chart1.Series["sMFI"].Points[lastChartIndex - 9].YValues[0];
+            //Console.WriteLine(" -------------- " + tmp_count++);
+            //Console.WriteLine(" Close [{0}]", close_price);
+            //Console.WriteLine(" RSI [{0}]", rsi_value);
+            //Console.WriteLine(" BB [{0}], [{1}], [{2}]", bb_upper_price, bb_moving_average_price, bb_lower_price);
+            //Console.WriteLine(" CCI [{0}]", cci_value);
+            //Console.WriteLine(" Stochastic [{0}], [{1}]", stochastic_k, stochastic_d);
+            //Console.WriteLine(" MFI [{0}]",  mfi_value);
+            //Console.WriteLine(" -------------- ");
+
+            //
+            if(bb_moving_average_price_prev < bb_moving_average_price)
+            {
+                Console.WriteLine(" High " + mfi_value + " , " + stochastic_k + " , " + stochastic_d + " , " + isBuy);
+                if(mfi_value > 70)
+                {
+                    //Console.WriteLine(": Sell ");
+                    //if(stochastic_k < stochastic_d)
+                    if (stochastic_k_prev < stochastic_d_prev)
+                    {
+                        if(isBuy == true)
+                        {
+                            Console.WriteLine(" -------------- ");
+                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell BT: " + buy_price + " , " + close_price);
+                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell TRX: " + buy_price_to_alt + " , " + trx_price);
+                            Console.WriteLine(" -------------- ");
+                            isBuy = false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine(" Low : " + mfi_value + " , " + stochastic_k + " , " + stochastic_d + " , " + isBuy);
+                if(mfi_value < 30)
+                {
+                    //Console.WriteLine(": Buy ");
+                    //if (stochastic_k > stochastic_d)
+                    if (stochastic_k_prev > stochastic_d_prev)
+                    {
+                        if (isBuy == false)
+                        {
+                            Console.WriteLine(" -------------- ");
+                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy BT: " + close_price);
+                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy TRX: " + trx_price);
+                            Console.WriteLine(" -------------- ");
+                            isBuy = true;
+                            buy_price = close_price;
+                            buy_price_to_alt = trx_price;
+                        }
+                    }
+                }
+            }
+#if true
+            if ((isBuy == true) && (close_price < (buy_price * 0.99)))
+            {
+                Console.WriteLine(" -------------- ");
+                Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Force Sell BT: " + buy_price + " , " + close_price);
+                Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Force Sell TRX: " + buy_price_to_alt + " , " + trx_price);
+                Console.WriteLine(" -------------- ");
+                isBuy = false;
+            }
+#endif
         }
     }
 

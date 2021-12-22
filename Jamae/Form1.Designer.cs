@@ -33,6 +33,7 @@
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
@@ -42,6 +43,7 @@
             System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series7 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series8 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series9 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.dgbTradeInfo = new System.Windows.Forms.DataGridView();
             this.Price = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Volume = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -126,7 +128,7 @@
             // rtbBPrice
             //
             this.rtbBPrice.Font = new System.Drawing.Font("휴먼모음T", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.rtbBPrice.Location = new System.Drawing.Point(65, 639);
+            this.rtbBPrice.Location = new System.Drawing.Point(63, 657);
             this.rtbBPrice.Name = "rtbBPrice";
             this.rtbBPrice.Size = new System.Drawing.Size(209, 65);
             this.rtbBPrice.TabIndex = 1;
@@ -145,18 +147,17 @@
             chartArea1.CursorX.IsUserSelectionEnabled = true;
             chartArea1.Name = "caCandle";
             chartArea1.Position.Auto = false;
-            chartArea1.Position.Height = 20F;
+            chartArea1.Position.Height = 17F;
             chartArea1.Position.Width = 96F;
             chartArea1.Position.X = 4F;
-            chartArea1.Position.Y = 4F;
             chartArea1.ShadowColor = System.Drawing.Color.Transparent;
             chartArea2.AlignWithChartArea = "caCandle";
             chartArea2.Name = "caVolume";
             chartArea2.Position.Auto = false;
-            chartArea2.Position.Height = 20F;
+            chartArea2.Position.Height = 17F;
             chartArea2.Position.Width = 96F;
             chartArea2.Position.X = 4F;
-            chartArea2.Position.Y = 24F;
+            chartArea2.Position.Y = 17F;
             chartArea3.AlignWithChartArea = "caCandle";
             chartArea3.AxisX.IsLabelAutoFit = false;
             chartArea3.AxisY.IsLabelAutoFit = false;
@@ -165,29 +166,37 @@
             chartArea3.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
             chartArea3.Name = "caRSI";
             chartArea3.Position.Auto = false;
-            chartArea3.Position.Height = 20F;
-            chartArea3.Position.Width = 80F;
+            chartArea3.Position.Height = 17F;
+            chartArea3.Position.Width = 96F;
             chartArea3.Position.X = 4F;
-            chartArea3.Position.Y = 44F;
+            chartArea3.Position.Y = 34F;
             chartArea4.AlignWithChartArea = "caCandle";
             chartArea4.Name = "caStochastic";
             chartArea4.Position.Auto = false;
-            chartArea4.Position.Height = 20F;
+            chartArea4.Position.Height = 17F;
             chartArea4.Position.Width = 96F;
             chartArea4.Position.X = 4F;
-            chartArea4.Position.Y = 64F;
+            chartArea4.Position.Y = 51F;
             chartArea5.AlignWithChartArea = "caCandle";
             chartArea5.Name = "caCCI";
             chartArea5.Position.Auto = false;
-            chartArea5.Position.Height = 20F;
+            chartArea5.Position.Height = 17F;
             chartArea5.Position.Width = 96F;
             chartArea5.Position.X = 4F;
-            chartArea5.Position.Y = 80F;
+            chartArea5.Position.Y = 68F;
+            chartArea6.AlignWithChartArea = "caCandle";
+            chartArea6.Name = "caMFI";
+            chartArea6.Position.Auto = false;
+            chartArea6.Position.Height = 17F;
+            chartArea6.Position.Width = 96F;
+            chartArea6.Position.X = 4F;
+            chartArea6.Position.Y = 83F;
             this.chart1.ChartAreas.Add(chartArea1);
             this.chart1.ChartAreas.Add(chartArea2);
             this.chart1.ChartAreas.Add(chartArea3);
             this.chart1.ChartAreas.Add(chartArea4);
             this.chart1.ChartAreas.Add(chartArea5);
+            this.chart1.ChartAreas.Add(chartArea6);
             legend1.Enabled = false;
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
@@ -243,6 +252,11 @@
             series8.Legend = "Legend1";
             series8.Name = "sCCI";
             series8.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            series9.ChartArea = "caMFI";
+            series9.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series9.Legend = "Legend1";
+            series9.Name = "sMFI";
+            series9.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             this.chart1.Series.Add(series1);
             this.chart1.Series.Add(series2);
             this.chart1.Series.Add(series3);
@@ -251,14 +265,15 @@
             this.chart1.Series.Add(series6);
             this.chart1.Series.Add(series7);
             this.chart1.Series.Add(series8);
-            this.chart1.Size = new System.Drawing.Size(594, 390);
+            this.chart1.Series.Add(series9);
+            this.chart1.Size = new System.Drawing.Size(594, 397);
             this.chart1.TabIndex = 2;
             this.chart1.Text = "chart1";
             //
             // rtbWarning
             //
             this.rtbWarning.Font = new System.Drawing.Font("굴림", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbWarning.Location = new System.Drawing.Point(295, 639);
+            this.rtbWarning.Location = new System.Drawing.Point(323, 657);
             this.rtbWarning.Name = "rtbWarning";
             this.rtbWarning.Size = new System.Drawing.Size(211, 65);
             this.rtbWarning.TabIndex = 4;
@@ -269,7 +284,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(618, 716);
+            this.ClientSize = new System.Drawing.Size(618, 735);
             this.Controls.Add(this.rtbWarning);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.rtbBPrice);
