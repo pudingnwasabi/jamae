@@ -41,3 +41,9 @@ D:\work\jamae\jamae\Jamae\obj\Debug\Jamae.csprojResolveAssemblyReference.cache
 D:\work\jamae\jamae\Jamae\obj\Debug\Jamae.Form1.resources
 D:\work\jamae\jamae\Jamae\obj\Debug\Jamae.Properties.Resources.resources
 D:\work\jamae\jamae\Jamae\obj\Debug\Jamae.csproj.GenerateResource.Cache
+D:\work\jamae\jamae\Jamae\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+D:\work\jamae\jamae\Jamae\bin\Debug\System.Threading.Tasks.Extensions.dll
+D:\work\jamae\jamae\Jamae\bin\Debug\Telegram.Bot.dll
+D:\work\jamae\jamae\Jamae\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\work\jamae\jamae\Jamae\bin\Debug\System.Threading.Tasks.Extensions.xml
+D:\work\jamae\jamae\Jamae\bin\Debug\Telegram.Bot.xml

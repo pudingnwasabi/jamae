@@ -32,6 +32,9 @@ namespace Jamae
         static string trx_price = "";
         static string buy_price_to_alt = "";
 
+        // Telegram
+        TelegramApi telegram = new TelegramApi();
+
         public Form1()
         {
             InitializeComponent();
@@ -58,8 +61,6 @@ namespace Jamae
             //bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
             // 스레드 완료(종료)시 호출되는 핸들러 동록
             //bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
-
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -201,16 +202,25 @@ namespace Jamae
 
                 trx_price = currentOrderBookStringTrx_bid_price;
 
+                // telegram 가격 저장
+                telegram.trxClosePrice = trx_price;
+
                 if (currntVolume != prevVolume)
                 {
                     prevVolume = currntVolume;
 
                     //table.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
-                    table.Rows.Add(currentPriceStringTrx_price, currentPriceStringTrx_volume, currentOrderBookStringTrx_ask_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), convertStringToInto(currentOrderBookStringTrx_bid_price), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
+                    //table.Rows.Add(currentPriceStringTrx_price, currentPriceStringTrx_volume, currentOrderBookStringTrx_ask_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), convertStringToInto(currentOrderBookStringTrx_bid_price), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume);
                     //tbLog.Text = tbMsg;
                     if (this.InvokeRequired)
                     {
                         this.BeginInvoke(new Action(() => rtbBPrice.Clear()));
+                        //Console.WriteLine(dgbTradeInfo.Rows.Count);
+                        // 행이 너무 많이 쌓이는 것 방지, 많이 쌓이면 처리 시간 오래 걸림
+                        if (dgbTradeInfo.Rows.Count == 12)
+                        {
+                            this.BeginInvoke(new Action(() => dgbTradeInfo.Rows.RemoveAt(0)));
+                        }
                         //this.BeginInvoke(new Action(() => dgbTradeInfo.Rows.Add(String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_price)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringTrx_volume)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_price)), String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume)));
                         this.BeginInvoke(new Action(() => dgbTradeInfo.Rows.Add(currentPriceStringTrx_price, currentPriceStringTrx_volume,  currentOrderBookStringTrx_ask_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_ask_size)), currentOrderBookStringTrx_bid_price, String.Format("{0:#,0}", convertStringToInto(currentOrderBookStringTrx_bid_size)), String.Format("{0:#,0}", convertStringToInto(currentPriceStringBtc_price)), currentPriceStringBtc_volume)));
                         if (currentPriceStringTrx_ask_bid.Equals("BID"))
@@ -240,6 +250,7 @@ namespace Jamae
                     }
                     else
                     {
+#if false
                         dgbTradeInfo.DataSource = table;
                         if (currentPriceStringTrx_ask_bid.Equals("BID"))
                         {
@@ -250,7 +261,7 @@ namespace Jamae
                             dgbTradeInfo.Rows[dgbTradeInfo.Rows.Count - 1].Cells[0].Style.BackColor = Color.Blue;
                         }
                         dgbTradeInfo.FirstDisplayedScrollingRowIndex = dgbTradeInfo.Rows.Count - 1;
-
+#endif
                     }
                 }
 
@@ -281,11 +292,11 @@ namespace Jamae
 
             // 시세 호가 정보(Orderbook) 조회
             //Console.WriteLine(U.GetOrderbook("KRW-BTC,KRW-ETH"));
-            #endregion
+#endregion
             Console.ReadLine();
         }
 
-        #region 차트
+#region 차트
         private void inittDrawChar()
         {
             Up U = new Up("W5zjjBBit8GjGd2mY5rOKFuVY12HV17q513qlmdr", "igQC32jg0NBMMUWadSs39iIAWft7sBGiaL801Unx");
@@ -525,6 +536,7 @@ namespace Jamae
                         chart1.Series["sSMA"].Points.RemoveAt(0);
                         chart1.Series["sCCI"].Points.RemoveAt(0);
                         chart1.Series["sMFI"].Points.RemoveAt(0);
+                        chart1.Series["sMA5"].Points.RemoveAt(0);
                         chart1.ResetAutoValues();
                     }));
 
@@ -562,6 +574,7 @@ namespace Jamae
                     chart1.Series["sSMA"].Points.RemoveAt(0);
                     chart1.Series["sCCI"].Points.RemoveAt(0);
                     chart1.Series["sMFI"].Points.RemoveAt(0);
+                    chart1.Series["sMA5"].Points.RemoveAt(0);
                     chart1.ResetAutoValues();
 
                     if (priceInfoList[0].시가 > priceInfoList[0].종가)
@@ -711,6 +724,16 @@ namespace Jamae
         {
             //Console.WriteLine("Calculations");
 
+            // Moving Average 5
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    // Bollinger Bands - moving average
+                    chart1.DataManipulator.FinancialFormula(FinancialFormula.WeightedMovingAverage, "5", "sCandle:Y", "sMA5");
+                }));
+            }
+
             // Relative Strength Index
             if (this.InvokeRequired)
             {
@@ -818,6 +841,7 @@ namespace Jamae
             double stochastic_k = chart1.Series["sStochastic"].Points[lastChartIndex - 8].YValues[0];
             double stochastic_d = chart1.Series["sSMA"].Points[lastChartIndex - 8].YValues[0];
             double mfi_value = chart1.Series["sMFI"].Points[lastChartIndex - 9].YValues[0];
+            double ma5_value = chart1.Series["sMA5"].Points[lastChartIndex - 4].YValues[0];
             //Console.WriteLine(" -------------- " + tmp_count++);
             //Console.WriteLine(" Close [{0}]", close_price);
             //Console.WriteLine(" RSI [{0}]", rsi_value);
@@ -825,25 +849,31 @@ namespace Jamae
             //Console.WriteLine(" CCI [{0}]", cci_value);
             //Console.WriteLine(" Stochastic [{0}], [{1}]", stochastic_k, stochastic_d);
             //Console.WriteLine(" MFI [{0}]",  mfi_value);
+            //Console.WriteLine(" MA5 [{0}]",  ma5_value);
             //Console.WriteLine(" -------------- ");
 
             //
-            if(bb_moving_average_price_prev < bb_moving_average_price)
+            if ((bb_moving_average_price_prev < bb_moving_average_price))
             {
                 Console.WriteLine(" High " + mfi_value + " , " + stochastic_k + " , " + stochastic_d + " , " + isBuy);
                 if(mfi_value > 70)
                 {
                     //Console.WriteLine(": Sell ");
                     //if(stochastic_k < stochastic_d)
-                    if (stochastic_k_prev < stochastic_d_prev)
+                    if (ma5_value > close_price)
                     {
-                        if(isBuy == true)
+                        if (stochastic_k_prev < stochastic_d_prev)
                         {
-                            Console.WriteLine(" -------------- ");
-                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell BT: " + buy_price + " , " + close_price);
-                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell TRX: " + buy_price_to_alt + " , " + trx_price);
-                            Console.WriteLine(" -------------- ");
-                            isBuy = false;
+                            if (isBuy == true)
+                            {
+                                Console.WriteLine(" -------------- ");
+                                Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell BT: " + buy_price + " , " + close_price);
+                                Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell TRX: " + buy_price_to_alt + " , " + trx_price);
+                                Console.WriteLine(" -------------- ");
+                                isBuy = false;
+
+                                telegram.Bot_SendMessage(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Sell TRX: " + buy_price_to_alt.ToString() + " , " + trx_price.ToString());
+                            }
                         }
                     }
                 }
@@ -857,15 +887,19 @@ namespace Jamae
                     //if (stochastic_k > stochastic_d)
                     if (stochastic_k_prev > stochastic_d_prev)
                     {
-                        if (isBuy == false)
+                        if (ma5_value < close_price)
                         {
-                            Console.WriteLine(" -------------- ");
-                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy BT: " + close_price);
-                            Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy TRX: " + trx_price);
-                            Console.WriteLine(" -------------- ");
-                            isBuy = true;
-                            buy_price = close_price;
-                            buy_price_to_alt = trx_price;
+                            if (isBuy == false)
+                            {
+                                Console.WriteLine(" -------------- ");
+                                Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy BT: " + close_price);
+                                Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy TRX: " + trx_price);
+                                Console.WriteLine(" -------------- ");
+                                telegram.Bot_SendMessage(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Buy TRX: " + " , " + trx_price.ToString());
+                                isBuy = true;
+                                buy_price = close_price;
+                                buy_price_to_alt = trx_price;
+                            }
                         }
                     }
                 }
@@ -878,8 +912,14 @@ namespace Jamae
                 Console.WriteLine(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Force Sell TRX: " + buy_price_to_alt + " , " + trx_price);
                 Console.WriteLine(" -------------- ");
                 isBuy = false;
+                telegram.Bot_SendMessage(DateTime.Now.ToString("[yy-MM-dd HH:mm:ss] ") + "Force Sell TRX: " + buy_price_to_alt.ToString() + " , " + trx_price.ToString());
             }
 #endif
+        }
+
+        public string getTrxClosePrice()
+        {
+            return trx_price;
         }
     }
 
